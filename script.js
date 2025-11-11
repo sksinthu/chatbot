@@ -9,42 +9,30 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-   const API_KEY = "AIzaSyCbwpJyMLK7J3btaApB7-5Szwqn-r9ZWcw"; 
+const API_KEY = "AIzaSyCbwpJyMLK7J3btaApB7-5Szwqn-r9ZWcw";
   const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
   let isWaiting = false;
 
   function createLoadingNode() {
     const loadingDiv = document.createElement("div");
     loadingDiv.className = "loading";
-    loadingDiv.innerHTML =
-      `<div class="loader"></div>`;
+    loadingDiv.innerHTML = `<div class="loader"></div>`;
     return loadingDiv;
   }
-function cleanBotText(text) {
-  if (!text) return "";
-  
-  // Remove stars or asterisks used for emphasis
-  let cleaned = text.replace(/\*+/g, ""); 
 
-  // Optional: trim extra spaces
-  cleaned = cleaned.trim();
+  function cleanBotText(text) {
+    if (!text) return "";
+    return text.replace(/\*+/g, "").trim();
+  }
 
-  return cleaned;
-}
-
- function formatBotResponse(text) {
-  const cleanText = cleanBotText(text);
-
-  // Highlight important keywords and make them bigger/darker
-  const formatted = cleanText.replace(
-    /\b(Important|Note|Remember|Tip)\b/gi,
-    '<span class="highlight">$1</span>'
-  );
-
-  // Preserve line breaks
-  return formatted.replace(/\n/g, "<br>");
-}
-
+  function formatBotResponse(text) {
+    const cleanText = cleanBotText(text);
+    const formatted = cleanText.replace(
+      /\b(Important|Note|Remember|Tip)\b/gi,
+      '<span class="highlight">$1</span>'
+    );
+    return formatted.replace(/\n/g, "<br>");
+  }
 
   async function getBotResponse(userMessage) {
     if (isWaiting) return;
@@ -65,32 +53,26 @@ function cleanBotText(text) {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
 
       const data = await response.json();
-
       const rawBotText =
         (data?.candidates?.[0]?.content?.parts?.map(p => p.text).join("\n")) ||
-        "Sorry, I couldn't understand that.";<div class="logo-circle">
-        <div class="logo-core"></div>
-      </div>
+        "Sorry, I couldn't understand that.";
 
       const formattedMessage = formatBotResponse(rawBotText);
-
-      if (loadingDiv.parentNode === chatbotBody) chatbotBody.removeChild(loadingDiv);
+      chatbotBody.removeChild(loadingDiv);
       addMessage(formattedMessage, "bot");
     } catch (err) {
-      if (loadingDiv.parentNode === chatbotBody) chatbotBody.removeChild(loadingDiv);
+      chatbotBody.removeChild(loadingDiv);
       console.error(err);
       addMessage("Error connecting to server. Please try again.", "bot");
     } finally {
       isWaiting = false;
       sendBtn.disabled = false;
       chatbotInput.disabled = false;
-      chatbotBody.scrollTop = chatbotBody.scrollHeight;
       chatbotInput.focus();
+      chatbotBody.scrollTop = chatbotBody.scrollHeight;
     }
   }
 
